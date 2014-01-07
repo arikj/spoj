@@ -1,6 +1,5 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include <vector>
 
 using namespace std;
 int temp[100000],temp2[100000]; 
@@ -70,48 +69,66 @@ temp2[tmp_pos] = b[mid];
   }
 }
 
-void find_lis(vector<int> &a, vector<int> &b)
+int binary_search(int arr[],int n,int x)
 {
-	vector<int> p(a.size());
-	int u, v;
- 
-	if (a.empty()) return;
- 
-	b.push_back(0);
- 
-	for (size_t i = 1; i < a.size(); i++) 
-        {
-                // If next element a[i] is greater than last element of current longest subsequence a[b.back()], just push it at back of "b" and continue
-		if (a[b.back()] <= a[i]) 
-                {
-			p[i] = b.back();
-			b.push_back(i);
-			continue;
-		}
- 
-                // Binary search to find the smallest element referenced by b which is just bigger than a[i]
-                // Note : Binary search is performed on b (and not a). Size of b is always <=k and hence contributes O(log k) to complexity.    
-		for (u = 0, v = b.size()-1; u < v;) 
-                {
-			int c = (u + v) / 2;
-			if (a[b[c]] < a[i]) u=c+1; else v=c;
-		}
- 
-                // Update b if new value is smaller then previously referenced value 
-		if (a[i] < a[b[u]]) 
-                {
-			if (u > 0) p[i] = b[u-1];
-			b[u] = i;
-		}	
+int mid;
+int left=0,right=n-1;
+
+while(left<right)
+	{
+	mid = (left+right)/2;
+
+	if(arr[mid]>x && arr[mid-1]<=x)
+		return mid-1;
+
+	else if(arr[mid+1]>x && arr[mid]<=x)
+		return mid;
+
+	else if(arr[mid]>x)
+		right = mid;
+
+	else if(arr[mid]<x)
+		left = mid;
 	}
- 
-	for (u = b.size(), v = b.back(); u--; v = p[v]) b[u] = v;
+return 0;
 }
+
+
+long int lis(int array[],int len)
+{
+int sz = 1,k;
+temp[1] = array[0]; /*at this point, the minimum value of the last element of the size 1 increasing sequence must be array[0]*/
+temp2[0] = 1;
+for( int i = 1; i < len; i++ ) {
+   if( array[i] < temp[1] ) {
+      temp[1] = array[i]; /*you have to update the minimum value right now*/
+      temp2[i] = 1;
+   }
+   else if( array[i] > temp[sz] ) {
+      temp[sz+1] = array[i];
+      temp2[i] = sz+1;
+      sz++;
+   }
+   else {
+      k = binary_search( temp, sz, array[i] ); /*you want to find k so that c[k-1]<array[i]<c[k]*/
+      temp[k] = array[i];
+      temp2[i] = k;
+   }
+}
+int max=temp2[0];
+for(int i=1;i<len;i++)
+	{
+	if(max<temp2[i])
+		max=temp2[i];
+	}
+return max;
+}
+
 
 int main()
 {
-int t,i,j,res,n,a[100000],b[100000],k,count,c[100000],d[100000];
-
+int t,i,j,n,a[100000],b[100000],k,count,c[100000],d[100000];
+long int res;
 scanf("%d",&t);
 
 for(i=0;i<t;i++)
@@ -163,11 +180,8 @@ for(i=0;i<t;i++)
                                         b[k+j-count] = c[k];
                                 }
 
-	vector<int> seq(b, b+sizeof(b)/sizeof(b[0])); // seq : Input Vector
-	vector<int> lis;
-	find_lis(seq,lis);
-
-	printf("%ld\n",lis.size());
+	res = lis(b,n);
+	printf("%ld\n",res);
 	}
 return 0;
 }
